@@ -10,7 +10,7 @@ function renderHeader() {
         <meta name="description" content="BLDEACET Central Library provides resources and services for students and staff, including course books, journals, and more.">
         <link rel="icon" href="bldea_logo.webp" type="image/x-icon">
         <title>BLDEACET Central Library</title>
-        <link rel="stylesheet" href="style.css?v=1.0">
+        <link rel="stylesheet" href="style.css?v=5.0">
         <!-- Google Fonts -->
         <link href="https://fonts.googleapis.com/css2?family=Arapey&family=Poppins:wght@400;500&display=swap" rel="stylesheet">    
     </head>
@@ -29,21 +29,20 @@ function renderHeader() {
                 <br>
                 <hr>  
                 <ul>
-                    <li><a href="course_books.html">Course Books</a></li>
-                    <li><a href="#">Classrooms</a></li>
-                    <li><a href="journals_publications.html">Journals and Publications</a></li>
-                    <li><a href="#">Research Papers</a></li>
+                    <li><a href="course_books.php">Course Books</a></li>
                     <li><a href="miscellaneous.html">Miscellaneous</a></li>
-                    <li><a href="#">Newsletters</a></li>
+                    <li><a href="commingsoon.html">Classrooms</a></li>
+                    <li><a href="commingsoon.html">Journals and Publications</a></li>
+                    <li><a href="commingsoon.html">Research Papers</a></li>
                     <li><a href="student_dashboard.php">Student Dashboard</a></li>
                     <li><a href="secure.php">Admin Dashboard</a></li>
                 </ul>
             </nav>        
             <nav class="navbar">
                 <a href="index.php" class="nav-link">Home</a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="#gallery" class="nav-link">Gallery</a>
-                <a href="#contact" class="nav-link">Contact</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="gallery.html" class="nav-link">Gallery</a>
+                <a href="contact.php" class="nav-link">Contact</a>
             </nav>
             <a href="login.php" class="login-btn"><span>Log in</span></a>
         </div>
@@ -198,12 +197,15 @@ renderHeader();
     </button>
     <div id="chatSidebar" class="chat-sidebar">
         <div class="chat-header">
-            <h3> &#10024; Ask Assistant</h3>
+        <h3 id="chatHeaderMessage"></h3>
             <button id="closeChat">&times;</button>
         </div>
         <div class="chat-body">
+        <div class="chat-footer">
+        <p class="chat-note">Hi Learner, I'm here to help, I may not be perfect, but I promise I will try my best for you!</p>
+        </div>
             <div class="messages"></div>
-            <input type="text" id="chatInput" placeholder="Type a message...">
+            <input type="text" id="chatInput" placeholder="Ask Something ...">
             <button id="sendMessage">Send</button>
         </div>
     </div>
@@ -212,6 +214,6 @@ renderHeader();
 <!-- Render the Footer -->
 <?php renderFooter(); ?>
 
-<script src="script.js?v=1.0"></script>
+<script src="script.js?v=6.0"></script>
 </body>
 </html>
