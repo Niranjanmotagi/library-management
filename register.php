@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "library_system";
+$dbname = "library_db";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -13,24 +13,25 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission
+// Variable to store error message
+$errorMessage = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $usn = $_POST['usn'];
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $usn = trim($_POST['usn']);
+    $department = trim($_POST['department']);
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm-password'];
 
     // Validate email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "Invalid email address!";
-        exit;
+        $errorMessage = "Invalid email address!";
     }
 
     // Check if passwords match
     if ($password !== $confirmPassword) {
-        echo "Passwords do not match!";
-        exit;
+        $errorMessage = "Passwords do not match!";
     }
 
     // Check for existing username, email, or USN
@@ -41,33 +42,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $checkStmt->get_result();
 
     if ($result->num_rows > 0) {
-        echo "Username, email, or USN already exists!";
-        exit;
+        $errorMessage = "Username, email, or USN already exists!";
     }
 
-    // Hash the password
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    // If no errors, proceed with registration
+    if (empty($errorMessage)) {
+        // Hash the password
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Insert into database
-    $insertSql = "INSERT INTO users (username, email, usn, password) VALUES (?, ?, ?, ?)";
-    $insertStmt = $conn->prepare($insertSql);
-    $insertStmt->bind_param("ssss", $username, $email, $usn, $hashedPassword);
+        // Insert into database
+        $insertSql = "INSERT INTO users (username, email, usn, department, password) VALUES (?, ?, ?, ?, ?)";
+        $insertStmt = $conn->prepare($insertSql);
+        $insertStmt->bind_param("sssss", $username, $email, $usn, $department, $hashedPassword);
 
-    if ($insertStmt->execute()) {
-        // Redirect to student dashboard
-        header("Location: student_dashboard.php");
-        exit;
-    } else {
-        error_log("Database error: " . $insertStmt->error);
-        echo "Something went wrong. Please try again later.";
+        if ($insertStmt->execute()) {
+            // Store session data and redirect to dashboard
+            session_start();
+            $_SESSION['username'] = $username;
+            $_SESSION['usn'] = $usn;
+            header("Location: student_dashboard.php");
+            exit;
+        } else {
+            error_log("Database error: " . $insertStmt->error);
+            $errorMessage = "Something went wrong. Please try again later.";
+        }
+
+        $insertStmt->close();
     }
 
     $checkStmt->close();
-    $insertStmt->close();
 }
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -77,7 +85,7 @@ $conn->close();
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Arapey&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="icon" href="bldea_logo.webp" type="image/x-icon">
-  <title>Register Page</title>
+  <title>Register Page | BLDEACET Central Library</title>
   <style>
     /* Reset styles */
     * {
@@ -160,10 +168,12 @@ $conn->close();
     }
 
     .right-section h1 {
+      margin-top: 150px;
       font-family: 'Arapey', sans-serif;
       font-weight: 300; /* Stronger font weight */
       font-size: 3rem; /* Larger font size */
       color: #333;
+      overflow-wrap: break-word; /* Ensure heading doesn't overflow */
       text-align: center;
       margin-bottom: 15px;
     }
@@ -185,12 +195,20 @@ $conn->close();
       color: #555;
     }
 
-    form input {
+    form input, form select {
       padding: 12px;
       font-size: 1rem;
       border: 1px solid #ddd;
       border-radius: 8px;
       transition: 0.3s;
+    }
+
+    form select {
+      color: #000000;
+    }
+
+    form select option[value=""] {
+      color: gray;
     }
 
     .switch {
@@ -221,6 +239,18 @@ $conn->close();
 
     .btn-primary:hover {
         background: linear-gradient(45deg, #222831, #000000); /* Purple gradient */
+    }
+
+      /* Error message style */
+      .error-message {
+      color: #95122c;
+      background:rgb(255, 255, 255, 1); 
+      border: 1px solid #95122c; /* Darker red border */
+      padding: 15px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      text-align: center;
     }
 
     @keyframes fadeIn {
@@ -292,6 +322,9 @@ $conn->close();
     <div class="right-section">
       <h1><span>&#10042;</span> Create Account</h1>
       <form action="register.php" method="POST">
+      <?php if (!empty($errorMessage)): ?>
+          <div class="error-message"><?php echo $errorMessage; ?></div>
+        <?php endif; ?>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" placeholder="Enter your username" required>
 
@@ -301,28 +334,36 @@ $conn->close();
         <label for="usn">USN:</label>
         <input type="text" id="usn" name="usn" placeholder="Enter your USN" required>
 
+        <label for="department">Department:</label>
+        <select id="department" name="department" required>
+          <option value="">Select your department</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Mechanical">Mechanical</option>
+          <option value="Civil">Civil</option>
+          <option value="Electrical">Electrical</option>
+        </select>
+
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" placeholder="Create a password" required>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
 
         <label for="confirm-password">Confirm Password:</label>
         <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
 
         <button type="submit" class="btn-primary">Register</button>
+
+        <div class="switch">
+          <p>Already have an account? <a href="login.php">Login</a></p>
+        </div>
       </form>
-      <p class="switch">Already have an account? <a href="login.php">Log in</a></p>
     </div>
   </div>
+
   <script>
-document.getElementById('registration-form').addEventListener('submit', function (e) {
-  const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirm-password').value;
-
-  if (password !== confirmPassword) {
-    alert('Passwords do not match!');
-    e.preventDefault();
-  }
-});
-
+    // Function to close the error message
+    function closeErrorMessage() {
+      document.getElementById("error-message").style.display = 'none';
+    }
   </script>
 </body>
 </html>
