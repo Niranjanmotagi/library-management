@@ -5,7 +5,7 @@ session_start();  // Start the session at the very beginning
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "library_system";
+$dbname = "library_db";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -15,42 +15,55 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission
+// Variable to store error message
+$errorMessage = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Check if the email exists in the database
-    $sql = "SELECT * FROM users WHERE email = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-
-        // Verify the password
-        if (password_verify($password, $user['password'])) {
-            // Start a session and set user session variables
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-
-            // Redirect to the student dashboard
-            header("Location: student_dashboard.php");
-            exit;  // Make sure no further code is executed
-        } else {
-            echo "Incorrect password!";
-        }
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errorMessage = "Invalid email format!";
     } else {
-        echo "No account found with this email!";
-    }
+        // Prepare and execute SQL query to prevent SQL injection
+        $sql = "SELECT * FROM users WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-    $stmt->close();
+            if ($result->num_rows === 1) {
+                $user = $result->fetch_assoc();
+
+                // Verify the password
+                if (password_verify($password, $user['password'])) {
+                    // Start a session and set user session variables
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['usn'] = $user['usn']; // Store the unique student number (USN) in session
+
+                    // Redirect to the student dashboard
+                    header("Location: student_dashboard.php");
+                    exit;
+                } else {
+                    $errorMessage = "Incorrect password!";
+                }
+            } else {
+                $errorMessage = "No account found with this email!";
+            }
+
+            $stmt->close();
+        } else {
+            $errorMessage = "Failed to prepare the SQL statement!";
+        }
+    }
 }
 
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,7 +72,7 @@ $conn->close();
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Arapey&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="icon" href="bldea_logo.webp" type="image/x-icon">
-  <title>Login Page</title>
+  <title>Login Page | BLDEACET Central Library</title>
   <style>
     /* Reset styles */
     * {
@@ -203,6 +216,18 @@ $conn->close();
       position: relative;
     }
 
+        /* Error message style */
+      .error-message {
+      color: #95122c;
+      background: rgb(255, 255, 255, 1);
+      border: 1px solid #95122c;
+      padding: 15px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      text-align: center;
+    }
+
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -261,8 +286,10 @@ $conn->close();
     <div class="left-section">
       <h1><span>&#10042;</span> Welcome back</h1>
       <p>Please enter your details to continue.</p>
-      <!-- Update form action to submit to the same page for processing -->
       <form method="POST" action="">
+      <?php if (!empty($errorMessage)): ?>
+          <div class="error-message"><?php echo $errorMessage; ?></div>
+        <?php endif; ?>
         <label for="email">Email:</label>
         <input type="email" name="email" id="email" placeholder="Enter your email" required>
         
