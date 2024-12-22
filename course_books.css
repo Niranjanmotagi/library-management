@@ -19,7 +19,7 @@ html {
     scroll-behavior: smooth;
 }
 
-span{
+span {
     color: #9b4d96;
 }
 
@@ -57,7 +57,7 @@ span{
     object-fit: cover; /* Ensures the image fits nicely */
 }
 
-.sidebar hr{
+.sidebar hr {
     border: 1px solid #9b4d96; /* Purple color */
 }
 
@@ -87,7 +87,6 @@ span{
     color: white;
 }
 
-
 /* Dropdown Menu Styles */
 .dropdown .dropdown-list {
     display: none;
@@ -116,7 +115,6 @@ span{
 .dropdown.open .toggle-btn::after {
     transform: rotate(180deg);
 }
-
 
 /* Search Bar Styles */
 .search-container {
@@ -194,7 +192,7 @@ span{
 }
 
 .filter-btn:hover {
-    background: linear-gradient(45deg, #222831,#222831); /* Purple gradient */
+    background: linear-gradient(45deg, #222831, #222831); /* Purple gradient */
 }
 
 .Header-container {
@@ -235,7 +233,6 @@ span{
     color: #cccccc;
 }
 
-
 /* Main Content */
 .main-content {
     margin-left: 270px;
@@ -261,4 +258,101 @@ section h2 {
 section p {
     font-size: 16px;
     color: #555;
+}
+
+/* Book List Container */
+.book-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    padding: 10px 0;
+    margin-left: 0;
+    width: 100%;
+}
+
+/* Book Card Styling */
+.book-card {
+    background-color: #fff;
+    padding: 30px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: calc(33.333% - 20px); /* Three cards in a row */
+    box-sizing: border-box;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    height: 400px;
+}
+
+.book-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 32%; /* Adjusted height for purple top */
+    background-color: #9b4d96;
+    border-radius: 15px 15px 0 0;
+    z-index: 0;
+}
+
+.book-card h3 {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 35px;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.book-card .book-meta {
+    color: #fff;
+    position: relative;
+    z-index: 1;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.book-card p {
+    font-size: 1em;
+    color: #666;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* Borrow Button */
+.borrow-btn {
+    background-color: #9b4d96;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 15px;
+    align-self: flex-start;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.borrow-btn:hover {
+    background-color: #222831;
+    transform: translateY(-3px);
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 768px) {
+    .book-card {
+        width: calc(50% - 20px); /* Two cards in a row */
+    }
+}
+
+@media (max-width: 480px) {
+    .book-card {
+        width: 100%; /* One card in a row */
+    }
 }
